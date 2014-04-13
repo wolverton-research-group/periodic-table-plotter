@@ -8,7 +8,7 @@ from matplotlib.collections import PatchCollection
 
 INSTALL_PATH = os.path.dirname(os.path.abspath(__file__))
 
-__all__ = ['ElementDataPlotter', 'plt']
+__all__ = ['ElementDataPlotter', 'plt', 'Square']
 
 def atomic_number(elt):
     """Atomic number (Z)"""
@@ -43,7 +43,8 @@ class ElementDataPlotter(object):
                 if not elt in elements:
                     continue
             _d[elt] = _data[elt]
-            _d[elt].update(value)
+            if elt in data:
+                _d[elt].update(data[elt])
         
         for pair, value in pair_data.items():
             _pair_data[frozenset(pair)] = value
@@ -52,9 +53,15 @@ class ElementDataPlotter(object):
         self._d = _d
 
     def make_periodic_table(self, values=[atomic_number], colors='jet',
-            **kwargs):
+            plot=True, **kwargs):
+        self.values = values
+        self.colors = colors
         fig, ax = plt.subplots()
+        fig.patch.set_visible(False)
+        ax.axis('off')
         squares = []
+        _values = []
+        indices = []
         for elt, data in self._d.items():
             x = data['group']
             y = data['period']
@@ -68,37 +75,68 @@ class ElementDataPlotter(object):
                     # is an actinide
                     y = 10.0
                     x = data['z'] - 86
+
             vals = [ v(data) for v in values ]
+            _values += vals
+            indices += [ i for i in range(len(values)) ]
             squares.append(Square(x, -y, data['symbol'], vals, dy=-1.0,
                 **kwargs))
+
+        self.values = _values
+        self.indices = indices
+        self.squares = squares
+        self.patches = []
+        for s in squares:
+            self.patches += s.patches
 
         if isinstance(colors, basestring):
             colors = [colors]*len(values)
 
+        if not plot:
+            return
+
+        collections = []
         for i, val in enumerate(values):
             cmap = plt.get_cmap(colors[i]) 
             values = []
             patches = []
-            for s in squares:
+            for s in self.squares:
                 patches.append(s.patches[i])
                 values.append(s.data[i])
-            pc = PatchCollection(patches, cmap=cmap)
+            pc = PatchCollection(patches, cmap=cmap, edgecolor="grey")
             pc.set_array(np.array(values))
             ax.add_collection(pc)
-            cbar = plt.colorbar(pc, orientation='horizontal', pad=0.025,
-                    aspect=60)
-            cbar.set_label(val.__doc__)
+            if kwargs.get('colorbar', True):
+                options = {
+                        'orientation':'horizontal',
+                        'pad':0.025, 'aspect':60
+                        }
+                options.update(kwargs)
+                cbar = plt.colorbar(pc, **options)
+                if val.__doc__:
+                    cbar.set_label(val.__doc__)
 
         ax.autoscale_view()
         ax.set_xticks([])
         ax.set_yticks([])
+        return ax, collections
+
+    def add_legend(self, values):
+        patches = Square(0, 0, range(len(values)))
 
     def make_arbitrary_grid(self, xelts=[], yelts=[], values=None):
         """
         Plots a grid of squares colored by one or more properties for A-B 
         element combinations. 
         """
-        raise NotImplementedError
+        fig, ax = plt.subplots()
+        x, y = [], []
+        if not xelts:
+            xelts = self.pair_data.keys()
+
+        if not yelts:
+            for x in xelts:
+                yelts += self.pair_data[x].keys()
 
     def make_pettifor_map(self, xaxis=atomic_number, yaxis=atomic_number,
             label=symbol):
@@ -126,7 +164,7 @@ class ElementDataPlotter(object):
         plt.ylabel(yaxis.__doc__)
 
 class Square(object):
-    def __init__(self, x, y, s, data=[],
+    def __init__(self, x, y, s=None, data=[],
             dx=1., dy=1., **kwargs):
         self.x, self.y = x,y
         self.dx, self.dy = dx, dy
@@ -134,8 +172,9 @@ class Square(object):
         self.data = data
         self.dims = len(data)
         self.set_patches(**kwargs)
-        plt.text(self.x + self.dx/2, self.y+self.dy/2, self.label, ha='center',
-                va='center', fontdict={'weight' : 'bold'})
+        if self.label:
+            plt.text(self.x + self.dx/2, self.y+self.dy/2, self.label, ha='center',
+                    va='center', fontdict={'color':'white'})# {'weight' : 'bold'})#, 'color':"white"})
 
     def __getitem__(self, index):
         return self.patches[index]
@@ -152,8 +191,22 @@ class Square(object):
             self.tricolor(**kwargs)
         elif self.dims == 4:
             self.tetracolor(**kwargs)
+        else:
+            self.patches = []
 
     def single_color(self, **kwargs):
+        """
+        Creates a single Patch.
+
+        +------------+
+        |            |
+        |            |
+        |     1st    |
+        |            |
+        |            |
+        +------------+
+
+        """
         x1, x2 = self.x, self.x+self.dx
         y1, y2 = self.y, self.y+self.dy
         patch = Polygon([
@@ -165,6 +218,20 @@ class Square(object):
         self.patches = [patch]
 
     def bicolor(self, **kwargs):
+        """
+        Plots 2 colors in a square:
+
+        +-------------+
+        |            /|
+        |   1st    /  |
+        |        /    |
+        |      /      |
+        |    /        |
+        |  /   2nd    |
+        |/            |
+        +-------------+
+
+        """
         x1, x2 = self.x, self.x+self.dx
         y1, y2 = self.y, self.y+self.dy
 
@@ -183,6 +250,20 @@ class Square(object):
         self.patches = [top, bot]
 
     def tricolor(self, **kwargs):
+        """
+        Plots 3 values in a square:
+
+        +-----+-----+
+        |     |     |
+        | 1st | 2nd |
+        |    / \    |
+        |   /   \   |
+        |  /     \  |
+        | /  3rd  \ |
+        |/         \|
+        +-----------+
+
+        """
         x1, x2 = self.x, self.x+self.dx
         x3 = self.x + self.dx*0.5
         y1, y2 = self.y, self.y+self.dy
@@ -209,5 +290,50 @@ class Square(object):
             [x3, y3]])# back to center
         self.patches = [left, right, bot]
 
-    def quadcolor(self, **kwargs):
-        raise NotImplementedError
+    def tetracolor(self, **kwargs):
+        """
+        Plots 4 values in a square:
+
+        +------+-----+
+        |      |     |
+        | 1st  | 2nd |
+        |      |     |
+        +------+-----+
+        |      |     |
+        | 4th  | 3rd |
+        |      |     |
+        +------+-----+
+
+        """
+        x1, x2 = self.x, self.x+self.dx
+        y1, y2 = self.y, self.y+self.dy
+        x3 = (x1+x2)/2
+        y3 = (y1+y2)/2
+
+        bl = Polygon([
+            [x3, y3], # center
+            [x3, y1], # to middle bottom
+            [x1, y1], # to bottom left
+            [x1, y3], # to middle left
+            [x3, y3]])# back to center
+        tl = Polygon([
+            [x3, y3], # center
+            [x3, y2], # to middle top
+            [x1, y2], # to top left
+            [x1, y3], # to middle left
+            [x3, y3]])# back to center
+        tr = Polygon([
+            [x3, y3], # center
+            [x3, y2], # to middle top
+            [x2, y2], # to top right
+            [x2, y3], # to middle right
+            [x3, y3]])# back to center
+        br = Polygon([
+            [x3, y3], # center
+            [x3, y1], # to middle bottom
+            [x2, y1], # to bottom right
+            [x2, y3], # to middle right
+            [x3, y3]])# back to center
+
+        self.patches = [tl, tr, br, bl]
+
