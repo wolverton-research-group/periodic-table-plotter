@@ -1,4 +1,5 @@
-from plotter import *
+from plotter import ElementDataPlotter
+import matplotlib.pylab as plt
 import random
 
 def eneg(elt):
@@ -26,28 +27,24 @@ for elt in pair_data_elts:
 
 def test_pettifor():
     epd = ElementDataPlotter()#elements=['Fe','Ni','Li','Bi'])
-    epd.make_pettifor_map(mass, eneg)
+    epd.pettifor(mass, eneg)
     plt.savefig('pettifor.png', bbox_inches='tight')
 
 def test_periodic_table():
     epd = ElementDataPlotter()#elements=['Fe','Ni','Li','Bi'])
     epd.ptable([eneg])
-    epd.create_guide_square()
     plt.savefig('uni.png', bbox_inches='tight')
 
     epd = ElementDataPlotter()
     epd.ptable([eneg, mass])
-    epd.create_guide_square()
     plt.savefig('bi.png', bbox_inches='tight')
 
     epd = ElementDataPlotter()
-    epd.ptable([eneg, mass, rat])
-    epd.create_guide_square()
+    epd.ptable([[eneg, mass], rat])
     plt.savefig('tri.png', bbox_inches='tight')
 
     epd = ElementDataPlotter()
     epd.ptable([eneg, mass, rat, atomic_number])
-    epd.create_guide_square()
     plt.savefig('quad.png', bbox_inches='tight')
 
 def test_grid():
@@ -55,5 +52,6 @@ def test_grid():
     epd.make_grid()
     plt.savefig('grid.png', bbox_inches='tight')
 
+test_pettifor()
 test_periodic_table()
-#test_grid()
+test_grid()
