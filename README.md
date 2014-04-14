@@ -21,4 +21,4 @@ Pettifor style map:
 ![Pettifor map](ptplotter/examples/pettifor.png)
 
 Grid of pair-wise elemental data:
-![Pair data](ptplotter/examples/grid.png')
+![Pair data](ptplotter/examples/grid.png)
