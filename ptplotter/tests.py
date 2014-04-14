@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 from plotter import ElementDataPlotter
 import matplotlib.pylab as plt
 import random
