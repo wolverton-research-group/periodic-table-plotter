@@ -18,15 +18,9 @@ def atomic_number(elt):
     """Atomic number"""
     return elt['z']
 
-pair_data_elts = [ 'Ti', 'V', 'Sc', 'Ni', 'Co', 'Fe' ]
-
-pair_data = {}
-for elt in pair_data_elts:
-    for elt2 in pair_data_elts:
-        pair_data[frozenset([elt, elt2])] = {'property':random.random()}
-
 def test_pettifor():
-    epd = ElementDataPlotter()#elements=['Fe','Ni','Li','Bi'])
+    elts = ['H', 'Li', 'Be', 'Fe', 'Ni', 'Pd', 'Pt', 'F', 'Xe', 'O', 'S']
+    epd = ElementDataPlotter(elements=elts)
     epd.pettifor(mass, eneg)
     plt.savefig('pettifor.png', bbox_inches='tight')
 
@@ -37,6 +31,7 @@ def test_periodic_table():
 
     epd = ElementDataPlotter()
     epd.ptable([eneg, mass])
+    epd.create_guide_square(x=8, y=-1.5)
     plt.savefig('bi.png', bbox_inches='tight')
 
     epd = ElementDataPlotter()
@@ -44,14 +39,16 @@ def test_periodic_table():
     plt.savefig('tri.png', bbox_inches='tight')
 
     epd = ElementDataPlotter()
-    epd.ptable([eneg, mass, rat, atomic_number])
+    epd.ptable([eneg, mass, rat, atomic_number], colorbar=False)
     plt.savefig('quad.png', bbox_inches='tight')
 
 def test_grid():
-    epd = ElementDataPlotter(pair_data=pair_data)
-    epd.make_grid()
+    epd = ElementDataPlotter()
+    elts = [ 'Ti', 'V', 'Sc', 'Ni', 'Co', 'Fe' ]
+    epd.make_grid(xelts=elts, yelts=elts)
     plt.savefig('grid.png', bbox_inches='tight')
 
-test_pettifor()
-test_periodic_table()
-test_grid()
+if __name__ == '__main__':
+    test_pettifor()
+    test_periodic_table()
+    test_grid()

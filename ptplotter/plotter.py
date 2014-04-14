@@ -154,7 +154,6 @@ class ElementDataPlotter(object):
         if not labels:
             labels = self.labels
         guide_square = Square(x, y, data=labels, **kwargs)
-        guide_square.set_labels(labels)
         for p in guide_square.patches:
             p.set_facecolor(kwargs.get('color', 'white'))
         self.guide_square = guide_square
@@ -228,8 +227,8 @@ class ElementDataPlotter(object):
             values = [ f(data) for f in self.functions ]
             square = Square(x, y, label=elt, data=values, **kwargs)
             self.add_square(square)
-        self.create_guide_square()
-        self.draw()
+        self.create_guide_square(**kwargs)
+        self.draw(**kwargs)
 
     def draw(self, colorbars=True, **kwargs):
         self.cbars = []
@@ -244,13 +243,12 @@ class ElementDataPlotter(object):
                         'pad':0.05, 'aspect':60
                         }
 
-                options.update(kwargs)
+                options.update(kwargs.get('colorbar-options', {}))
                 cbar = plt.colorbar(pc, **options)
                 cbar.set_label(label)
                 self.cbars.append(cbar)
 
         fontdict = kwargs.get('font', {'color':'white'})
-        fontdict.update(**kwargs)
         for s in self.squares:
             if not s.label:
                 continue
