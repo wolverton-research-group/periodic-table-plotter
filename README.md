@@ -1,5 +1,6 @@
-periodic-table-plotter
+periodic-table-plotter 
 ======================
+[![Build Status](https://travis-ci.org/wolverton-research-group/periodic-table-plotter.svg?branch=master)](https://travis-ci.org/wolverton-research-group/periodic-table-plotter)
 
 Make a periodic table that plots 1-4 values per tile, easily configure grids 
 of pair-wise elemental data (with 1-4 values per tile) and create 
