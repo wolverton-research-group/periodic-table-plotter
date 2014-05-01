@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
+
 import plotter
-import matplotlib.pylab as plt
 import random
 from StringIO import StringIO
 from unittest import TestCase
