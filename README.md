@@ -17,7 +17,7 @@ epd = ElementDataPlotter()
 epd.ptable([eneg])
 plt.show()
 ```
-![Single value colormap](ptplotter/examples/uni.png)
+![Single value colormap](examples/uni.png)
 
 Periodic table with two values per tile
 ```python
@@ -29,7 +29,7 @@ epd = ElementDataPlotter()
 epd.ptable([eneg, mass])
 plt.show()
 ```
-![Double value colormap](ptplotter/examples/bi.png)
+![Double value colormap](examples/bi.png)
 
 Periodic table with three values per tile
 ```python
@@ -41,7 +41,7 @@ epd = ElementDataPlotter()
 epd.ptable([eneg, mass, rat])
 plt.show()
 ```
-![Triple value colormap](ptplotter/examples/tri.png)
+![Triple value colormap](examples/tri.png)
 
 Periodic table with four values per tile
 ```python
@@ -53,7 +53,7 @@ epd = ElementDataPlotter()
 epd.ptable([eneg, mass, rat, atomic_number])
 plt.show()
 ```
-![Quadrupel value colormap](ptplotter/examples/quad.png)
+![Quadrupel value colormap](examples/quad.png)
 
 Pettifor style map:
 ```python
@@ -72,4 +72,4 @@ epd = ElementDataPlotter()
 epd.make_grid(xelts=elts, yelts=elts)
 plt.show()
 ```
-![Pair data](ptplotter/examples/grid.png)
+![Pair data](examples/grid.png)

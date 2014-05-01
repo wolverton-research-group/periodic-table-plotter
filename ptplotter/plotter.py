@@ -174,20 +174,26 @@ class ElementDataPlotter(object):
             yelts = list(elts)
 
         for i, elt1 in enumerate(xelts):
-            self._ax.text(i+0.5, len(yelts)+0.25, elt1, 
-                          va='center', ha='right')
+            self._ax.text(i+0.5, 0.25, elt1, 
+                          va='bottom', ha='center', rotation='vertical')
+            #self._ax.text(i+0.5, len(yelts)+0.25, elt1, 
+            #              va='bottom', ha='center', rotation='vertical')
             for j, elt2 in enumerate(yelts):
                 pair = (elt1, elt2)
-                data = self._pairs.get(frozenset(pair), {})
+                data = self._pairs.get(pair, {})
                 if isinstance(data, dict):
                     data['pair'] = pair
+                if data is None:
+                    continue
                 vals = [ f(data) for f in self.functions ]
-                square = Square(i, j, data=vals, **kwargs)
+                square = Square(i, -j, dy=-1., data=vals, **kwargs)
                 self.add_square(square)
 
         for j, elt2 in enumerate(yelts):
-            self._ax.text(-0.25, j+0.5, elt2, 
-                          va='bottom', ha='center')
+            #self._ax.text(-0.25, j+0.5, elt2, 
+            #              va='center', ha='right')
+            self._ax.text(-0.25, -j-0.5, elt2, 
+                          va='center', ha='right')
 
         self._ax.set_xticks([])
         self._ax.set_yticks([])
