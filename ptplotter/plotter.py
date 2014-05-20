@@ -159,7 +159,7 @@ class ElementDataPlotter(object):
         self.guide_square = guide_square
 
     def make_grid(self, xelts=[], yelts=[], functions=[eneg_diff],
-            cmaps='jet', **kwargs):
+            cmaps='jet', draw=True, **kwargs):
         """
         Plots a grid of squares colored by one or more properties for A-B 
         element combinations. 
@@ -176,8 +176,8 @@ class ElementDataPlotter(object):
         for i, elt1 in enumerate(xelts):
             self._ax.text(i+0.5, 0.25, elt1, 
                           va='bottom', ha='center', rotation='vertical')
-            #self._ax.text(i+0.5, len(yelts)+0.25, elt1, 
-            #              va='bottom', ha='center', rotation='vertical')
+            self._ax.text(i+0.5, -len(yelts) - 0.25, elt1, 
+                          va='top', ha='center', rotation='vertical')
             for j, elt2 in enumerate(yelts):
                 pair = (elt1, elt2)
                 data = self._pairs.get(pair, {})
@@ -190,17 +190,18 @@ class ElementDataPlotter(object):
                 self.add_square(square)
 
         for j, elt2 in enumerate(yelts):
-            #self._ax.text(-0.25, j+0.5, elt2, 
-            #              va='center', ha='right')
             self._ax.text(-0.25, -j-0.5, elt2, 
                           va='center', ha='right')
+            self._ax.text(len(xelts) + 0.25, -j-0.5, elt2, 
+                          va='center', ha='left')
 
         self._ax.set_xticks([])
         self._ax.set_yticks([])
-        self.draw()
+        if draw:
+            self.draw(**kwargs)
         self._ax.autoscale_view()
 
-    def ptable(self, functions=[atomic_number], cmaps=None, **kwargs):
+    def ptable(self, functions=[atomic_number], cmaps=None, guide=True, **kwargs):
         """
         Create Squares in the form a periodic table.
         
@@ -233,7 +234,8 @@ class ElementDataPlotter(object):
             values = [ f(data) for f in self.functions ]
             square = Square(x, y, label=elt, data=values, **kwargs)
             self.add_square(square)
-        self.create_guide_square(**kwargs)
+        if guide:
+            self.create_guide_square(**kwargs)
         self.draw(**kwargs)
 
     def draw(self, colorbars=True, **kwargs):
