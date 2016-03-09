@@ -111,7 +111,18 @@ class ElementDataPlotter(object):
         self._ax = axes
 
     def add_square(self, square):
+        """
+        Add square to list of squares being plotted
+        
+        Input:
+            square - Square, square to be plotted
+        """
+        
+        # Add to internal list of squares
         self.squares.append(square)
+        
+        # Add each of the individual patches that make up the
+        #  square to the collection corresponding to that group
         for ind, patch in zip(self.groups, square.patches):
             self.collections[ind].append(patch)
 
@@ -205,6 +216,30 @@ class ElementDataPlotter(object):
         """
         Create Squares in the form a periodic table.
         
+        Input:
+            functions - list, Functions that define the value used to determine
+                the color of each element. 
+                
+                Functions should take a dictionary that contains the properties
+                of elements (ex: elt['z'] is the atomic number) and returns
+                a color value as the output. The documentation string for the function
+                is used as the label for the guide square. 
+                
+                Example:
+                def color_function(elt):
+                    ''' Atomic Mass '''
+                    return elt.get['atomic_mass']
+                    
+            cmaps - list, List of colormaps for each property being plotted
+            
+            guide - boolean, Whether to plot guide square
+        
+        Kwargs:
+            colorbars - boolean, Whether to print colorbars
+            colorbar_options - dict, Containing settings specific for the colorbars
+            font - dict, Containing information about the font for element labels
+            elem_labels - boolean, Whether to plot names of elements (default = True)
+        
         Examples::
         
             >>> epd = ElementDataPlotter()
@@ -232,13 +267,28 @@ class ElementDataPlotter(object):
         for elt, data in self._elts.items():
             x, y = get_coord_from_symbol(elt)
             values = [ f(data) for f in self.functions ]
-            square = Square(x, y, label=elt, data=values, **kwargs)
+            elt_label = elt if kwargs.get('elem_labels', True) else None
+            square = Square(x, y, label=elt_label, data=values, **kwargs)
             self.add_square(square)
         if guide:
             self.create_guide_square(**kwargs)
         self.draw(**kwargs)
 
     def draw(self, colorbars=True, **kwargs):
+        """
+        Color squares on plot appropriately, and place color bar
+        
+        Input:
+            colorbars - boolean, Whether to print colorbars on figure
+        
+        Kwargs:
+            font - dict, Containing information about the font for element labels
+            colorbars - boolean, Whether to print colorbars
+            colorbar-options - dict, Containing settings specific for the colorbars
+        """
+        
+        # Plot each set of patches making up the squares, which correspond
+        #  to the different properties being plotted
         self.cbars = []
         for coll, cmap, label in zip(self.collections, self.cmaps, self.cbar_labels):
             pc = PatchCollection(coll, cmap=cmap)
@@ -251,11 +301,12 @@ class ElementDataPlotter(object):
                         'pad':0.05, 'aspect':60
                         }
 
-                options.update(kwargs.get('colorbar-options', {}))
+                options.update(kwargs.get('colorbar_options', {}))
                 cbar = plt.colorbar(pc, **options)
                 cbar.set_label(label)
                 self.cbars.append(cbar)
 
+        # Add label to center of square
         fontdict = kwargs.get('font', {'color':'white'})
         for s in self.squares:
             if not s.label:
@@ -266,6 +317,7 @@ class ElementDataPlotter(object):
                                          va='center', 
                                          fontdict=fontdict)
 
+        # Plot the guide square
         if self.guide_square:
             self.guide_square.set_labels(self.labels)
             pc = PatchCollection(self.guide_square.patches, match_original=True)
