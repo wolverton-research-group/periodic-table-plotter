@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pylab as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+from six import string_types
 
 INSTALL_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,7 +29,7 @@ def symbol(data):
 def get_coord_from_symbol(data):
     """Determines the cartesian coordinate of an element on the periodic
     table."""
-    if isinstance(data, basestring):
+    if isinstance(data, string_types):
         data = elt_data[data]
     x = data['group']
     y = data['period']
@@ -382,7 +383,7 @@ class Square(object):
         return len(self.patches)
 
     def set_labels(self, labels, **kwargs):
-        if isinstance(labels, basestring):
+        if isinstance(labels, string_types):
             self.single_label(labels, **kwargs)
         elif len(labels) == 1:
             self.single_label(labels[0], **kwargs)
@@ -445,7 +446,7 @@ class Square(object):
              +------------+
                 bottom
         """
-        assert isinstance(label, basestring)
+        assert isinstance(label, string_types)
         if position == 'top':
             x = self.x + self.dx/2
             y = self.y + self.dy*1.25
